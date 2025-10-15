@@ -12,7 +12,7 @@ package miumg.edu.Biblioteca.entity;
 import jakarta.persistence.*;
 import java.util.List;
 
-import javax.persistence.Entity;
+
 
 @Entity
 @Table(name = "GENERO_LIBROS")

@@ -46,7 +46,7 @@ public class SecurityConfig {
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/api/libros/**").hasAnyRole("ADMIN", "BIBLIOTECARIO", "LECTOR")
+                    .requestMatchers("/api/libros/**").hasAnyRole("ADMIN", "BIBLIOTECARIO", "USUARIO")
                     .requestMatchers("/api/usuarios/**").hasAnyRole("ADMIN")
                     .anyRequest().authenticated()
             )

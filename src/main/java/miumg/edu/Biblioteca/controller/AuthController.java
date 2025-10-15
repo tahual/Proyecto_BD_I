@@ -48,7 +48,7 @@ public class AuthController {
             );
             UserDetails ud = (UserDetails) auth.getPrincipal();
             Optional<Usuario> uOpt = usuarioRepository.findByNombre(ud.getUsername());
-            String role = uOpt.map(u -> u.getRol().getNombreRol()).orElse("LECTOR");
+            String role = uOpt.map(u -> u.getRol().getNombreRol()).orElse("USUARIO");
             String token = jwtTokenUtil.generateToken(ud.getUsername(), role);
             return ResponseEntity.ok(new AuthResponse(token, ud.getUsername(), role));
         } catch (BadCredentialsException ex) {
@@ -62,7 +62,7 @@ public class AuthController {
         if (usuarioRepository.findByNombre(dto.getNombre()).isPresent()) {
             return ResponseEntity.badRequest().body("Usuario ya existe");
         }
-        Rol rol = rolRepository.findByNombreRol("LECTOR");
+        Rol rol = rolRepository.findByNombreRol("USUARIO");
         if (rol == null) {
             return ResponseEntity.status(500).body("Roles no inicializados");
         }

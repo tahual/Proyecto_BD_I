@@ -50,7 +50,7 @@ public class SolicitudController {
     @Autowired private HistorialRepository historialRepository;
 
     // Usuario solicita un préstamo (o bibliotecario registra el préstamo en nombre de un usuario)
-    @PreAuthorize("hasAnyRole('LECTOR','BIBLIOTECARIO','ADMIN')")
+    @PreAuthorize("hasAnyRole('USUARIO','BIBLIOTECARIO','ADMIN')")
     @PostMapping
     @Transactional
     public ResponseEntity<?> crearPrestamo(@RequestBody LoanRequestDTO request, Authentication authentication) {
@@ -156,7 +156,7 @@ public class SolicitudController {
     }
 
     // Listar prestamos de un usuario (usuario puede ver los suyos; admin/biblio pueden ver cualquiera)
-    @PreAuthorize("hasAnyRole('LECTOR','BIBLIOTECARIO','ADMIN')")
+    @PreAuthorize("hasAnyRole('USUARIO','BIBLIOTECARIO','ADMIN')")
     @GetMapping("/usuario/{id}")
     public ResponseEntity<?> prestamosPorUsuario(@PathVariable Long id, Authentication authentication) {
         Optional<Usuario> uOpt = usuarioRepository.findById(id);

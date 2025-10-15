@@ -56,7 +56,7 @@ public class UsuarioController {
         if (usuarioRepository.findByNombre(usuario.getNombre()).isPresent()) {
             return ResponseEntity.badRequest().body("Usuario ya existe");
         }
-        Rol rol = roleName != null ? rolRepository.findByNombreRol(roleName) : rolRepository.findByNombreRol("LECTOR");
+        Rol rol = roleName != null ? rolRepository.findByNombreRol(roleName) : rolRepository.findByNombreRol("USUARIO");
         if (rol == null) return ResponseEntity.badRequest().body("Rol inválido");
         usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
         usuario.setRol(rol);
