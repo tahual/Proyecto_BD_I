@@ -43,10 +43,17 @@ public class Libro {
     @Column(name = "EDITORIAL", nullable = false, length = 100)
     private String editorial;
 
+    @Column(name = "ESTADO", length = 20)
+    private String estado;
+
+    @Column(name = "IMAGEN_PATH")
+    private String imagenPath;
+
     @OneToMany(mappedBy = "libro", fetch = FetchType.LAZY)
     private List<DetallePrestamo> detallesPrestamo;
 
-    public Libro() {}
+    public Libro() {
+    }
 
     public Long getIdLibro() {
         return idLibro;
@@ -111,6 +118,23 @@ public class Libro {
     public void setEditorial(String editorial) {
         this.editorial = editorial;
     }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public String getImagenPath() {
+        return imagenPath;
+    }
+
+    public void setImagenPath(String imagenPath) {
+        this.imagenPath = imagenPath;
+    }
+    
 
     public List<DetallePrestamo> getDetallesPrestamo() {
         return detallesPrestamo;

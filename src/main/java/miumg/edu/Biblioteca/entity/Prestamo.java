@@ -8,6 +8,7 @@ package miumg.edu.Biblioteca.entity;
  *
  * @author danyt
  */
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +24,7 @@ public class Prestamo {
 
     @ManyToOne
     @JoinColumn(name = "ID_USUARIO", nullable = false)
+    @JsonIgnoreProperties({"prestamos","historiales","contrasena"})
     private Usuario usuario;
 
     @Column(name = "FECHA_PRESTAMO")
@@ -34,13 +36,20 @@ public class Prestamo {
     @Column(name = "ESTADO", length = 20)
     private String estado;
 
+
+    @Column(name = "FECHA_LIMITE")
+    private LocalDateTime fechaLimite;
+
     @OneToMany(mappedBy = "prestamo", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("prestamo") 
     private List<DetallePrestamo> detalles;
 
     @OneToMany(mappedBy = "prestamo", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("prestamo")
     private List<Historial> historiales;
 
-    public Prestamo() {}
+    public Prestamo() {
+    }
 
     public Long getIdPrestamo() {
         return idPrestamo;
@@ -80,6 +89,14 @@ public class Prestamo {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+    
+     public LocalDateTime getFechaLimite() {
+        return fechaLimite;
+    }
+
+    public void setFechaLimite(LocalDateTime fechaLimite) {
+        this.fechaLimite = fechaLimite;
     }
 
     public List<DetallePrestamo> getDetalles() {

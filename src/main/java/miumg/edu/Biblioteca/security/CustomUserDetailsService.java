@@ -20,17 +20,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+
+    public CustomUserDetailsService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByNombre(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-        return User.builder()
-                .username(usuario.getNombre())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+
+        String rol = usuario.getRol().getNombreRol(); // "ADMIN", "BIBLIOTECARIO", "USUARIO"
+        return org.springframework.security.core.userdetails.User
+                .withUsername(usuario.getNombre())
                 .password(usuario.getContrasena())
-                .roles(usuario.getRol().getNombreRol())
+                .roles(rol)
                 .build();
     }
 }

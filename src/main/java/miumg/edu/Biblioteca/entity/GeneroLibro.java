@@ -9,6 +9,7 @@ package miumg.edu.Biblioteca.entity;
  * @author danyt
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class GeneroLibro {
     private String nombreGenero;
 
     @OneToMany(mappedBy = "genero", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Libro> libros;
 
     public GeneroLibro() {}

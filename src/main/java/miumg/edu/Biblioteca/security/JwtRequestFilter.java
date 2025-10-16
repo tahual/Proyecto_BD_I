@@ -4,12 +4,12 @@
  */
 package miumg.edu.Biblioteca.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,49 +24,51 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private final JwtTokenUtil jwtTokenUtil;
+    private final CustomUserDetailsService userDetailsService;
 
-    // ESTO ES LO CLAVE PARA ELIMINAR EL 403 EN EL REGISTRO
+    public JwtRequestFilter(JwtTokenUtil jwtTokenUtil, CustomUserDetailsService userDetailsService) {
+        this.jwtTokenUtil = jwtTokenUtil;
+        this.userDetailsService = userDetailsService;
+    }
+
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        // Excluye /api/auth/register y /api/auth/login
-        return path.startsWith("/api/auth/");
-    }
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
 
-   @Override
-protected void doFilterInternal(HttpServletRequest request,
-                                HttpServletResponse response,
-                                FilterChain chain)
-        throws ServletException, IOException {
+        final String authHeader = request.getHeader("Authorization");
 
-    final String authHeader = request.getHeader("Authorization");
-    String username = null;
-    String jwt = null;
+        String username = null;
+        String jwt = null;
 
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-        jwt = authHeader.substring(7);
-        try {
-            username = jwtTokenUtil.extractUsername(jwt);
-        } catch (Exception e) {
-            System.out.println("Token inválido o expirado: " + e.getMessage());
-            // No bloqueamos la solicitud, simplemente no autenticamos
-            username = null;
+        // Verifica si viene el token JWT
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
+            try {
+                username = jwtTokenUtil.extractUsername(jwt);
+            } catch (JwtException e) {
+                logger.warn("Token inválido o expirado: " + e.getMessage());
+            }
         }
+
+        // Si el token es válido y no hay usuario autenticado todavía
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+        }
+
+        chain.doFilter(request, response);
     }
 
-    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        // Ignora rutas públicas
+        return path.startsWith("/api/auth") || path.startsWith("/api/usuarios/registrar");
     }
-
-    chain.doFilter(request, response);
-}
-
 }

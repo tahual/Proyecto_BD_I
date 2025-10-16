@@ -8,6 +8,7 @@ package miumg.edu.Biblioteca.entity;
  *
  * @author danyt
  */
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -21,10 +22,12 @@ public class DetallePrestamo {
 
     @ManyToOne
     @JoinColumn(name = "ID_PRESTAMO", nullable = false)
+    @JsonIgnoreProperties({"detalles","historiales"})
     private Prestamo prestamo;
 
     @ManyToOne
     @JoinColumn(name = "ID_LIBRO", nullable = false)
+    @JsonIgnoreProperties({"detallesPrestamo"})
     private Libro libro;
 
     @Column(name = "CANTIDAD")

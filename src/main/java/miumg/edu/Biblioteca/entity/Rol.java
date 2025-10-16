@@ -4,6 +4,7 @@
  */
 package miumg.edu.Biblioteca.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class Rol {
     private String nombreRol;
 
     @OneToMany(mappedBy = "rol", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Usuario> usuarios;
 
     public Rol() {}

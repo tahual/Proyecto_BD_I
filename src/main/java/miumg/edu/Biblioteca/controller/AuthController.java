@@ -4,7 +4,6 @@
  */
 package miumg.edu.Biblioteca.controller;
 
-import java.util.Optional;
 import miumg.edu.Biblioteca.dto.AuthRequest;
 import miumg.edu.Biblioteca.dto.AuthResponse;
 import miumg.edu.Biblioteca.dto.RegisterDTO;
@@ -14,12 +13,12 @@ import miumg.edu.Biblioteca.repository.RolRepository;
 import miumg.edu.Biblioteca.repository.UsuarioRepository;
 import miumg.edu.Biblioteca.security.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,25 +33,40 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired private AuthenticationManager authenticationManager;
-    @Autowired private JwtTokenUtil jwtTokenUtil;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private RolRepository rolRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @Autowired
+    private RolRepository rolRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
-            Authentication auth = authenticationManager.authenticate(
+            // Autenticamos al usuario
+            authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
-            UserDetails ud = (UserDetails) auth.getPrincipal();
-            Optional<Usuario> uOpt = usuarioRepository.findByNombre(ud.getUsername());
-            String role = uOpt.map(u -> u.getRol().getNombreRol()).orElse("USUARIO");
-            String token = jwtTokenUtil.generateToken(ud.getUsername(), role);
-            return ResponseEntity.ok(new AuthResponse(token, ud.getUsername(), role));
+
+            // Buscamos el usuario directamente
+            Usuario usuario = usuarioRepository.findByNombre(request.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + request.getUsername()));
+
+            // Obtenemos el rol
+            String role = usuario.getRol().getNombreRol();
+
+            // Generamos el token JWT
+            String token = jwtTokenUtil.generateToken(usuario.getNombre(), role);
+
+            // Devolvemos respuesta al frontend
+            return ResponseEntity.ok(new AuthResponse(token, usuario.getNombre(), role));
+
         } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(401).body("Credenciales inválidas");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
         }
     }
 

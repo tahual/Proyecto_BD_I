@@ -9,6 +9,8 @@ package miumg.edu.Biblioteca.entity;
  * @author danyt
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,13 +34,16 @@ public class Usuario {
     @Column(name = "FECHA_DE_REGISTRO")
     private LocalDateTime fechaDeRegistro;
 
-    @Column(name = "CONTRASENA", nullable = false, length = 200)
+    @Column(name = "CONTRASENA", nullable = false, length = 250)
+    @JsonIgnore
     private String contrasena;
 
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("usuario")
     private List<Prestamo> prestamos;
 
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("usuario")
     private List<Historial> historiales;
 
     public Usuario() {}

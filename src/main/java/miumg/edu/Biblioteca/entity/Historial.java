@@ -8,6 +8,7 @@ package miumg.edu.Biblioteca.entity;
  *
  * @author danyt
  */
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -22,10 +23,12 @@ public class Historial {
 
     @ManyToOne
     @JoinColumn(name = "ID_PRESTAMO", nullable = false)
+    @JsonIgnoreProperties({"historiales","detalles","usuario"})
     private Prestamo prestamo;
 
     @ManyToOne
     @JoinColumn(name = "ID_USUARIO")
+    @JsonIgnoreProperties({"prestamos","historiales","contrasena"})
     private Usuario usuario;
 
     @Column(name = "FECHA_EVENTO")
