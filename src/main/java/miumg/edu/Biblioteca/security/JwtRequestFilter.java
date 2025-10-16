@@ -29,32 +29,44 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    // ESTO ES LO CLAVE PARA ELIMINAR EL 403 EN EL REGISTRO
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                   HttpServletResponse response,
-                                   FilterChain chain)
-            throws ServletException, IOException {
-
-        final String authHeader = request.getHeader("Authorization");
-        String username = null;
-        String jwt = null;
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-            try {
-                username = jwtTokenUtil.extractUsername(jwt);
-            } catch (Exception e) {
-                System.out.println("Token inválido: " + e.getMessage());
-            }
-        }
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-        }
-        chain.doFilter(request, response);
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        // Excluye /api/auth/register y /api/auth/login
+        return path.startsWith("/api/auth/");
     }
+
+   @Override
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain chain)
+        throws ServletException, IOException {
+
+    final String authHeader = request.getHeader("Authorization");
+    String username = null;
+    String jwt = null;
+
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        jwt = authHeader.substring(7);
+        try {
+            username = jwtTokenUtil.extractUsername(jwt);
+        } catch (Exception e) {
+            System.out.println("Token inválido o expirado: " + e.getMessage());
+            // No bloqueamos la solicitud, simplemente no autenticamos
+            username = null;
+        }
+    }
+
+    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    chain.doFilter(request, response);
+}
+
 }

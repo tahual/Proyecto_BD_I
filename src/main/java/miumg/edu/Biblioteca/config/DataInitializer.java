@@ -35,9 +35,9 @@ public class DataInitializer implements CommandLineRunner {
             biblio.setNombreRol("BIBLIOTECARIO");
             rolRepository.save(biblio);
 
-            Rol lector = new Rol();
-            lector.setNombreRol("LECTOR");
-            rolRepository.save(lector);
+            Rol usuario = new Rol();
+            usuario.setNombreRol("USUARIO");
+            rolRepository.save(usuario);
 
             // Crear usuario admin por defecto si no existe
             if (usuarioRepository.findByNombre("admin").isEmpty()) {
